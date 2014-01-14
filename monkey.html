@@ -5,6 +5,9 @@
     <div id="player"></div>
 
     <script>
+      // Configuraton variables
+      var poll_interval = 300;
+      var poll_blobsize = 8 * 34 * 3600 * 3;
       // 2. This code loads the IFrame Player API code asynchronously.
       var tag = document.createElement('script');
 
@@ -29,11 +32,22 @@
       // 4. The API will call this function when the video player is ready.
       function onPlayerReady(event) {
         setTimeout(seekVideo, 1000);
+        videoFrame = document.getElementsByTagName('iframe')[0];
+        vid = videoFrame.contentDocument.getElementsByTagName('video')[0];
+        pollVideoCl = function() { return pollVideo(vid); }
+        setInterval(pollVideoCl, poll_interval);
       }
 
       function seekVideo() {
         player.seekTo(Math.random() * player.getDuration(), true);
         setTimeout(seekVideo, 10000);
+      }
+
+      // 5. Track what is currently displayed in video
+      var iteration = 0;
+      function pollVideo(vid) {
+        console.log(new Date().getTime() + " " + iteration + " " + vid.videoHeight + " " + vid.currentTime);
+        iteration++;
       }
     </script>
   </body>
