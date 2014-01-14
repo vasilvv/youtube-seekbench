@@ -29,12 +29,11 @@
       // 4. The API will call this function when the video player is ready.
       function onPlayerReady(event) {
         setTimeout(seekVideo, 1000);
-        event.target.seekTo(Math.random() * 1000, true);
       }
 
       function seekVideo() {
-        player.seekTo(Math.random() * 1000, true);
-        setTimeout(seekVideo, 1000);
+        player.seekTo(Math.random() * player.getDuration(), true);
+        setTimeout(seekVideo, 10000);
       }
     </script>
   </body>
