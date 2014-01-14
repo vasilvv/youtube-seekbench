@@ -7,7 +7,7 @@
     <script>
       // Configuraton variables
       var poll_interval = 300;
-      var poll_blobsize = 8 * 34 * 3600 * 3;
+      var poll_blobsize = 16 * 34 * 3600 * 3;
       // 2. This code loads the IFrame Player API code asynchronously.
       var tag = document.createElement('script');
 
@@ -32,9 +32,9 @@
       // 4. The API will call this function when the video player is ready.
       function onPlayerReady(event) {
         setTimeout(seekVideo, 1000);
-        videoFrame = document.getElementsByTagName('iframe')[0];
-        vid = videoFrame.contentDocument.getElementsByTagName('video')[0];
-        pollVideoCl = function() { return pollVideo(vid); }
+        var videoFrame = document.getElementsByTagName('iframe')[0];
+        var vid = videoFrame.contentDocument.getElementsByTagName('video')[0];
+        var pollVideoCl = function() { return pollVideo(vid); }
         setInterval(pollVideoCl, poll_interval);
       }
 
@@ -45,8 +45,26 @@
 
       // 5. Track what is currently displayed in video
       var iteration = 0;
+      var starttime = new Date().getTime();
+
+      // Because polling too often and storing results in text
+      // can result in too bloated dumps, encode data in binary
+      // format. The format is following:
+      //    - Each entry is 16 bytes
+      //    - All values are little-endian
+      //    - Entry format:
+      //        * time since start in ms (uint32)
+      //        * video height (uint32)
+      //        * time offset of the video (float64)
+
+      var videolog = new ArrayBuffer(poll_blobsize);
+      var videologView = new DataView(videolog);
       function pollVideo(vid) {
-        console.log(new Date().getTime() + " " + iteration + " " + vid.videoHeight + " " + vid.currentTime);
+        var timeoffset = new Date().getTime() - starttime;
+        //console.log(timeoffset + " " + iteration + " " + vid.videoHeight + " " + vid.currentTime);
+        videologView.setUint32(16 * iteration, timeoffset, true);
+        videologView.setUint32(16 * iteration + 4, vid.videoHeight, true);
+        videologView.setFloat64(16 * iteration + 8, vid.currentTime, true);
         iteration++;
       }
     </script>
